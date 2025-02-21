@@ -11,6 +11,9 @@ for (let i = 0; i < 9; i++) {
     tile.dataset.index = i;
     grid.appendChild(tile);
     tiles.push(tile);
+
+    // Add touch event listener for touchscreen interaction
+    tile.addEventListener("click", () => handleTileInteraction(i));
 }
 
 // Key mapping
@@ -20,6 +23,7 @@ const keyMapping = {
     'z': 6, 'x': 7, 'c': 8
 };
 
+// Function to change the red tile
 function changeTile() {
     if (currentRedTile !== null) {
         tiles[currentRedTile].classList.remove("red");
@@ -29,16 +33,21 @@ function changeTile() {
     tiles[newRedTile].classList.add("red");
 }
 
+// Function to handle both keyboard and touchscreen input
+function handleTileInteraction(tileIndex) {
+    tiles[tileIndex].classList.add("yellow");
+    setTimeout(() => tiles[tileIndex].classList.remove("yellow"), 200);
+
+    if (tileIndex === currentRedTile) {
+        score++;
+        scoreDisplay.textContent = score;
+    }
+}
+
+// Keyboard event listener
 document.addEventListener("keydown", (event) => {
     if (keyMapping[event.key] !== undefined) {
-        let tileIndex = keyMapping[event.key];
-        tiles[tileIndex].classList.add("yellow");
-        setTimeout(() => tiles[tileIndex].classList.remove("yellow"), 200);
-
-        if (tileIndex === currentRedTile) {
-            score++;
-            scoreDisplay.textContent = score;
-        }
+        handleTileInteraction(keyMapping[event.key]);
     }
 });
 
