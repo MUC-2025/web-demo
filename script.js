@@ -12,8 +12,12 @@ for (let i = 0; i < 9; i++) {
     grid.appendChild(tile);
     tiles.push(tile);
 
-    // Add touch event listener for touchscreen interaction
-    tile.addEventListener("click", () => handleTileInteraction(i));
+    // Add event listeners for both mouse and touch press interactions
+    tile.addEventListener("mousedown", () => handleTileInteraction(i));
+    tile.addEventListener("touchstart", (event) => {
+        event.preventDefault(); // Prevents ghost clicks on touch devices
+        handleTileInteraction(i);
+    });
 }
 
 // Key mapping
@@ -33,7 +37,7 @@ function changeTile() {
     tiles[newRedTile].classList.add("red");
 }
 
-// Function to handle both keyboard and touchscreen input
+// Function to handle interactions
 function handleTileInteraction(tileIndex) {
     tiles[tileIndex].classList.add("yellow");
     setTimeout(() => tiles[tileIndex].classList.remove("yellow"), 200);
