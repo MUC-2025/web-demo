@@ -33,3 +33,40 @@ body {
 .yellow {
     background-color: yellow;
 }
+
+#startButton {
+    width: 100px;
+    height: 100px;
+    background-color: red;
+    color: white;
+    font-size: 20px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+#startButton:hover {
+    background-color: darkred;
+}
+
+
+#stopButton {
+    width: 100px;
+    height: 100px;
+    background-color: red;
+    color: white;
+    font-size: 20px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+}
+
+#stopButton:hover {
+    background-color: darkred;
+}
