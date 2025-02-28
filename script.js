@@ -47,31 +47,48 @@ for (let i = 0; i < 9; i++) {
 
 // TODO: finish beat map from notebook
 const startTimeDelay = 1000
-let beatMap = [
-    // Be-cause, [qw]
 
-    { time: startTimeDelay + 150, tile: 0}, { time: startTimeDelay + 300, tile: 1 },
-    // when the sun shine we shine toge-ther, [d z c a q w d ac]
-    { time: startTimeDelay + 350, tile: 5}, { time: startTimeDelay + 650, tile: 6 }, 
-    { time: startTimeDelay + 950, tile: 8}, { time: startTimeDelay + 1250, tile: 3 }, 
-    { time: startTimeDelay + 1550, tile: 0}, { time: startTimeDelay + 1850, tile: 1 }, 
-    { time: startTimeDelay + 2150, tile: 5}, { time: startTimeDelay + 2450, tile: 3 }, { time: startTimeDelay + 2450 + 150, tile: 8 }, 
+const halfLength = 150
+const fullLength = halfLength * 2
 
-    // Told you I'd be here for-ever
 
-    // Said I'd always be your friend
+// helper function for adding beats sequentially
 
-    // Took an oath and imma stick it out to the end
+let beatMap = []
+let currentTime = startTimeDelay
+function addBeats(sequence) {
+    sequence.forEach(({ tile, duration}) => {
+        beatMap.push(({ time: currentTime, tile }))
+        currentTime += duration
+    })
+}
 
-    // now that it's raining more than ev-er
 
-    // know that we'll still have each oth-er
+// Be-cause, [qw]
+addBeats([
+    {tile: 0, duration: halfLength}, {tile: 1, duration: halfLength}
+])
 
-    // you can stand under my um-bre-lla
+// When the sun shine we shine toge-ther
+// [d z c a q w d ac]
+addBeats([
+    { tile: 5, duration: fullLength }, { tile: 6, duration: fullLength }, { tile: 8, duration: fullLength }, { tile: 3, duration: fullLength }, { tile: 0, duration: fullLength }, { tile: 1, duration: fullLength }, { tile: 5, duration: fullLength }, { tile: 3, duration: halfLength }, { tile: 8, duration: halfLength },   
+])
 
-    // you can stand under my um-bre-lla, el-la, el-la, eh, eh, eh
+// Told you I'd be here for-ever
 
-];
+// Said I'd always be your friend
+
+// Took an oath and imma stick it out to the end
+
+// now that it's raining more than ev-er
+
+// know that we'll still have each oth-er
+
+// you can stand under my um-bre-lla
+
+// you can stand under my um-bre-lla, el-la, el-la, eh, eh, eh
+
 
 
 // Key mapping
@@ -89,10 +106,10 @@ function highlightTile(index) {
     }
     tiles[index].classList.add("red")
 
-    // time out after ~300 ms?
+    // time out after ~500 ms?
     setTimeout(() => {
         tiles[index].classList.remove("red")
-    }, 300)
+    }, 500)
 }
 
 
