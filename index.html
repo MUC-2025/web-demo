@@ -7,7 +7,11 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h1>Score: <span id="score">0</span></h1>
+<h1>Question:</h1>
+<h1><span id="question">Press "Play!" to start the game</span></h1>
+<h2 id="score">Math Score: 0</h2>
+<h2 id="lives">Lives: ❤️❤️❤️❤️❤️</h2>
+<h2 id="timer">Time Left: 10s</h2>
 <button id="startButton">Play!</button>
 <h2>Controls:</h2>
 <pre>
@@ -15,9 +19,9 @@
     a  s  d
     z  x  c
     </pre>
-<p>Press the corresponding key or tap the tile to hit the red tile!</p>
-<button id="stopButton">Stop game!</button>
-
+<p>Press the corresponding key or tap the tile to select the correct answer!</p>
+<!-- <button id="stopButton">Stop game!</button> -->
+<div class="math-grid" id="math-grid"></div>
 <div class="grid" id="grid"></div>
 <script src="script.js"></script>
 </body>

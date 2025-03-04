@@ -1,202 +1,147 @@
-const grid = document.getElementById("grid");
-const scoreDisplay = document.getElementById("score");
-let tiles = [];
-let currentRedTile = null;
 let score = 0;
+let lives = 5;
+let answerButtons = [];
+let timer;
+let timeLeft = 10; // 10 seconds per question
 
+// Load sound effects
+const correctSound = new Audio('correct.mp3');
+const wrongSound = new Audio('wrong.mp3');
+const timeoutSound = new Audio('timeout.mp3'); // New timeout sound
 
-const audio = new Audio("songs/Rihanna-Umbrella.mp3")
-
-// start song at 0:55 (55s)
-const AUDIO_START_TIME = 55
-
-// end song at 1:35 (95s)
-const AUDIO_END_TIME = 95
-
-// Create 3x3 grid tiles
-for (let i = 0; i < 9; i++) {
-    let tile = document.createElement("div");
-    tile.classList.add("tile");
-    tile.dataset.index = i;
-    grid.appendChild(tile);
-    tiles.push(tile);
-
-    // Add event listeners for both mouse and touch press interactions
-    tile.addEventListener("mousedown", () => handleTileInteraction(i));
-    tile.addEventListener("touchstart", (event) => {
-        event.preventDefault(); // Prevents ghost clicks on touch devices
-        handleTileInteraction(i);
-    });
+// Function to update the HUD (Score, Lives, Timer)
+function updateHUD() {
+    document.getElementById('score').textContent = `Score: ${score}`;
+    document.getElementById('lives').textContent = `Lives: ${'❤️'.repeat(lives)}`;
+    document.getElementById('timer').textContent = `Time Left: ${timeLeft}s`;
 }
 
-// guidelines:
-// s: baseline position (safe space) 
-// start at lyric: "Because, when the sun shine, we shine together" (0:50), end at "under my umbrella -ella -ella"(1:32)
+// Function to start the countdown timer
+function startTimer() {
+    clearInterval(timer); // Reset any previous timer
+    timeLeft = 10; // Reset timer to 10 seconds
+    updateHUD();
 
-// START AT 0:50, END AT 1:35)
+    timer = setInterval(() => {
+        timeLeft--;
+        updateHUD();
 
-// beat map (move this to another file)
-// Umbrella tempo: 174 BPM, half-time: 87 BPM
-// C#/Db major key, 4 beats/bar
-
-// assuming for now each Rihanna syllable is around ~300ms for testing
-
-// delay of 4 secs between start time
-
-// notation: space is full-length note (300ms), 2 letter combos are half-length notes (150 ms)
-
-// TODO: finish beat map from notebook
-const startTimeDelay = 1000
-
-const halfLength = 150
-const fullLength = halfLength * 2
-
-
-// helper function for adding beats sequentially
-
-let beatMap = []
-let currentTime = startTimeDelay
-function addBeats(sequence) {
-    sequence.forEach(({ tile, duration}) => {
-        beatMap.push(({ time: currentTime, tile }))
-        currentTime += duration
-    })
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            handleTimeOut();
+        }
+    }, 1000);
 }
 
+// Function to handle timeout (player loses a life)
+function handleTimeOut() {
+    timeoutSound.play(); // Play timeout sound
+    lives--; // Lose a life
 
-// Be-cause, [qw]
-addBeats([
-    {tile: 0, duration: halfLength}, {tile: 1, duration: halfLength}
-])
-
-// When the sun shine we shine toge-ther
-// [d z c a q w d ac]
-addBeats([
-    { tile: 5, duration: fullLength }, { tile: 6, duration: fullLength }, { tile: 8, duration: fullLength }, { tile: 3, duration: fullLength }, { tile: 0, duration: fullLength }, { tile: 1, duration: fullLength }, { tile: 5, duration: fullLength }, { tile: 3, duration: halfLength }, { tile: 8, duration: halfLength },   
-])
-
-// Told you I'd be here for-ever
-
-// Said I'd always be your friend
-
-// Took an oath and imma stick it out to the end
-
-// now that it's raining more than ev-er
-
-// know that we'll still have each oth-er
-
-// you can stand under my um-bre-lla
-
-// you can stand under my um-bre-lla, el-la, el-la, eh, eh, eh
-
-
-
-// Key mapping
-const keyMapping = {
-    'q': 0, 'w': 1, 'e': 2,
-    'a': 3, 's': 4, 'd': 5,
-    'z': 6, 'x': 7, 'c': 8
-};
-
-// function to highlight tile and turn it from red to yellow
-function highlightTile(index) {
-    // if a red tile exists and is pressed remove it
-    if (currentRedTile !== null) {
-        tiles[currentRedTile].classList.remove("red")
+    if (lives <= 0) {
+        alert("Game Over! Restarting...");
+        startGame();
+        return;
     }
-    tiles[index].classList.add("red")
 
-    // time out after ~500 ms?
-    setTimeout(() => {
-        tiles[index].classList.remove("red")
-    }, 500)
+    displayNextQuestion(); // Move to the next question
 }
 
-
-
-// keep track of game timeouts
-let gameTimeOuts = []
-
-// Function to start game
-function startGame() {
-    
-    // stopGame()
-    // play song from start time
-    audio.currentTime = AUDIO_START_TIME
-    audio.play()
-
-    // stop song at stop time
-    setTimeout(() => {
-        audio.pause()
-        audio.currentTime = AUDIO_START_TIME
-    }, (AUDIO_END_TIME - AUDIO_START_TIME) * 1000) // convert sec to millisecond
-
-
-    // play beatmap
-    beatMap.forEach(beat => {
-        let timeoutId = setTimeout(() => {
-            highlightTile(beat.tile);
-        }, beat.time);
-        
-        // Store timeouts so they can be cleared when stopping
-        gameTimeOuts.push(timeoutId);
-    });
+// Function to generate a random multiplication question (1 to 12)
+function getRandomMultiplicationQuestion() {
+    const num1 = Math.floor(Math.random() * 12) + 1;
+    const num2 = Math.floor(Math.random() * 12) + 1;
+    return { question: `${num1} x ${num2}`, correctAnswer: num1 * num2 };
 }
 
+// Function to generate 9 unique answers (including the correct one)
+function generateAnswers(correctAnswer) {
+    const answers = new Set([correctAnswer]);
 
-// function to stop game
-function stopGame() {
-    // pause audio
-    audio.pause()
-    audio.currentTime = AUDIO_START_TIME
-
-    gameTimeOuts.forEach(timeoutId => {
-        clearTimeout(timeoutId)
-    })
-
-    // reset score
-    score = 0
-    scoreDisplay.textContent = score
-
-    tiles.forEach(tile => {
-        tile.classList.remove('red', 'yellow')
-    })
-
-    alert("Game stopped")
-}
-
-
-// Function to change the red tile (randomly)
-function randomChangeTile() {
-    if (currentRedTile !== null) {
-        tiles[currentRedTile].classList.remove("red");
+    while (answers.size < 9) {
+        const randomAnswer = Math.floor(Math.random() * 144) + 1; // 1 to 144
+        answers.add(randomAnswer);
     }
-    let newRedTile = Math.floor(Math.random() * 9);
-    currentRedTile = newRedTile;
-    tiles[newRedTile].classList.add("red");
+
+    return Array.from(answers).sort(() => Math.random() - 0.5); // Shuffle answers
 }
 
+// Function to handle answer selection (mouse & keyboard)
+function handleAnswerSelection(selectedButton, answer, correctAnswer) {
+    clearInterval(timer); // Stop the timer when the user selects an answer
 
-
-// Function to handle interactions
-function handleTileInteraction(tileIndex) {
-    tiles[tileIndex].classList.add("yellow");
-    setTimeout(() => tiles[tileIndex].classList.remove("yellow"), 200);
-
-    if (tileIndex === currentRedTile) {
+    if (answer === correctAnswer) {
+        selectedButton.style.backgroundColor = 'green';
+        correctSound.play();
         score++;
-        scoreDisplay.textContent = score;
+    } else {
+        selectedButton.style.backgroundColor = 'red';
+        wrongSound.play();
+        lives--;
+
+        if (lives <= 0) {
+            alert("Game Over! Restarting...");
+            startGame();
+            return;
+        }
+    }
+
+    updateHUD();
+
+    setTimeout(() => {
+        if (lives > 0) {
+            displayNextQuestion();
+        }
+    }, 700);
+}
+
+// Function to display the next question and reset the timer
+function displayNextQuestion() {
+    const { question, correctAnswer } = getRandomMultiplicationQuestion();
+
+    document.getElementById('question').textContent = question;
+
+    const answers = generateAnswers(correctAnswer);
+
+    const gridContainer = document.getElementById('grid');
+    gridContainer.innerHTML = '';
+    answerButtons = [];
+
+    answers.forEach((answer, index) => {
+        const button = document.createElement('button');
+        button.textContent = answer;
+        button.style.transition = 'background-color 0.3s';
+
+        button.addEventListener('click', () => handleAnswerSelection(button, answer, correctAnswer));
+
+        gridContainer.appendChild(button);
+        answerButtons.push({ button, answer });
+    });
+
+    startTimer(); // Start timer for the new question
+}
+
+// Function to start the game (resets score, lives, and timer)
+function startGame() {
+    score = 0;
+    lives = 5;
+    updateHUD();
+    displayNextQuestion();
+}
+
+// Function to handle keyboard input
+function handleKeyPress(event) {
+    const keyMap = ['q', 'w', 'e', 'a', 's', 'd', 'z', 'x', 'c'];
+    const keyIndex = keyMap.indexOf(event.key.toLowerCase());
+
+    if (keyIndex !== -1 && answerButtons[keyIndex]) {
+        answerButtons[keyIndex].button.click();
     }
 }
 
-// Keyboard event listener
-document.addEventListener("keydown", (event) => {
-    if (keyMapping[event.key] !== undefined) {
-        handleTileInteraction(keyMapping[event.key]);
-    }
-});
+// Attach event listener to the start button
+document.getElementById('startButton').addEventListener('click', startGame);
+document.addEventListener('keydown', handleKeyPress);
 
-document.getElementById("startButton").addEventListener("click", startGame)
-document.getElementById("stopButton").addEventListener("click", stopGame)
-
-// setInterval(randomChangeTile, 1000);
+// Initialize the HUD on page load
+updateHUD();
